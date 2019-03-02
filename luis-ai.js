@@ -2,6 +2,16 @@ const request = require("request-promise");
 const striptags = require("striptags");
 
 let luisResults; // Luis.ai analysis results are stored here.
+let internalConfig = { endpoint: "" }; // populated with config method.
+
+/**
+ * Configure LUIS
+ * @param {object} config Configuration object
+ * @param {string} config.url http endpoint of published LUIS service
+ */
+exports.config = function(instanceConfig) {
+  internalConfig.endpoint = instanceConfig.endpoint;
+};
 
 /**
  * Analyze the subject and body of the email with Luis.ai and store results in the
@@ -15,7 +25,7 @@ async function luisAnalyze(bot) {
 
   // Endpoint is set by the user on the Luis.ai skill settings page. (See Settings handler below)
   // prettier-ignore
-  const luisEndpoint = bot.get("mailbot.stored_data.natural_language_middleware.luis_endpoint");
+  const luisEndpoint = bot.get("mailbot.stored_data.natural_language_middleware.luis_endpoint", internalConfig.endpoint);
 
   try {
     luisResults = await request({

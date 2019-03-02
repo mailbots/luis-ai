@@ -52,6 +52,10 @@ Retrieve all intents with their probabilities
 
 Extract key phrases (people, places, search phrases, etc)
 
+### `luisAnalyze(bot)`
+
+Get raw output from LUIS's parsing of the email subject and body
+
 ### `configure(config)`
 
 Pass configuration options (as shown above)
