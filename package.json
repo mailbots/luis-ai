@@ -1,0 +1,12 @@
+{
+  "name": "mailbots-luis-ai",
+  "version": "1.0.0",
+  "description": "LUIS.ai support for your MailBot",
+  "main": "luis-ai.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
