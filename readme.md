@@ -12,33 +12,63 @@ Install the LUIS MailBot Skill
 
 `npm install @mailbots/luis-ai`
 
+Require the lib and configure your LUIS endpoint (See LUIS setup)
+
 ```javascript
 const mbLuis = require("@mailbots/luis-ai");
-```
-
-Configure your LUIS endpoint (See LUIS setup)
-
-```javascript
-mbLuis.config({
-  endpoint:
-    "https://<region>.api.cognitive.microsoft.com/luis/v2.0/apps/<appID>?subscription-key=<YOUR-KEY>&q="
+mbLuis.luisConfig({
+  endpoint: "https://<region>.api.cognitive.microsoft.com/etc/etc"
 });
 ```
 
-Use it wihin a [MailBot handler](https://github.com/mailbots/mailbots#handlers) to parse natural language:
+Use individual functions within a [MailBot handler](https://github.com/mailbots/mailbots#handlers) to parse natural language, for example:
 
 ```javascript
 // someone emails help@your-bot.eml.bot
-onCommand("help", bot => {
+mailbot.onCommand("help", bot => {
   const topIntent = mbLuis.getTopIntent(bot);
 
-  // do different things based on user intent!
+  // do different things based on user intent! 🧙‍♂️
 
   bot.webhook.respond();
 });
 ```
 
-## Refernece
+You can also use middleware to populate `bot.skills.luis` for every handler
+
+```javascript
+// invoke middleware once...
+mailbot.app.use(mbLuis.luisMiddleware({ endpoint: process.env.LUIS_ENDPOINT }));
+
+// every handler now has a LUIS analysis
+mailbot.onCommand("help", bot => {
+  const topIntent = bot.skills.luis.intents[0].intent;
+  bot.webhook.respond();
+});
+
+// here too...
+mailbot.onCommand("ask", bot => {
+  const topIntent = bot.skills.luis.intents[0].intent;
+  bot.webhook.respond();
+});
+```
+
+## Reference
+
+This module
+
+### `luisMiddleware(config)`
+
+Get LUIS middleware to parse every request. LUIS results available at `bot.skills.luis` For example:
+
+```javascript
+mailbot.app.use(mbLuis.luisMiddleware({ endpoint: process.env.LUIS_ENDPOINT }));
+// every handler after this point will contain LUIS results on bot.skills.luis
+```
+
+### `luisConfig({ endpoint: LUIS_ENDPOINT_URL })`
+
+Configure LUIS endpoint before calling the below functions independently
 
 ### `getTopIntent(bot)`
 
@@ -55,10 +85,6 @@ Extract key phrases (people, places, search phrases, etc)
 ### `luisAnalyze(bot)`
 
 Get raw output from LUIS's parsing of the email subject and body
-
-### `configure(config)`
-
-Pass configuration options (as shown above)
 
 ### `createLuisAiSettingsPage(bot)`
 
