@@ -9,9 +9,10 @@ let internalConfig = { endpoint: "" }; // populated with config method.
  * @param {object} config Configuration object
  * @param {string} config.url http endpoint of published LUIS service
  */
-exports.config = function(instanceConfig) {
+exports.luisConfig = luisConfig;
+function luisConfig(instanceConfig) {
   internalConfig.endpoint = instanceConfig.endpoint;
-};
+}
 
 /**
  * Analyze the subject and body of the email with Luis.ai and store results in the
@@ -32,8 +33,10 @@ async function luisAnalyze(bot) {
       uri: luisEndpoint + emailSubject + "%20" + emailBody,
       json: true
     });
+    return luisResults;
   } catch (e) {
-    console.log("Luis.ai API call failed", e.message);
+    console.log("LUIS API call failed", e.message);
+    return e;
   }
 }
 
@@ -79,6 +82,29 @@ exports.getKeyPhrases = async function(bot) {
   );
 
   return keyPhrases;
+};
+
+/**
+ * LUIS middleware – runs every request through LUIS, adding results
+ * to bot.skills.luis
+ * @param {object} config
+ * @param {string} config.endpoint - LUIA API Endpoint
+ */
+exports.luisMiddleware = function(config) {
+  return async function(req, res, next) {
+    luisConfig(config);
+    const bot = res.locals.bot;
+    bot.skills = bot.skills || {};
+    try {
+      bot.skills.luis = await luisAnalyze(bot);
+
+      next();
+    } catch (e) {
+      console.error(e);
+      bot.skills.luis = { status: "error", message: e.message };
+      next();
+    }
+  };
 };
 
 /**
